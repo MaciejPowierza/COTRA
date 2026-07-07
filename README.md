@@ -11,7 +11,8 @@ FINAL_RESULTS_1732_4894_MMs.tsv contains the counted edits done on Hek293T cell 
 *TOTAL_SUMS:* the rowwise sum of edits in a given loci. One locus is either one edited nucleotide or a group of nucleotides with pairwise distances smaller than 5nt apart,  
 *cluster_id:* unique ID of the edited locus (see description of the *TOTAL_SUMS* column,  
 *clustered_sequence:* nt sequence of the edited locus (either one or more nt long),  
-*centered_sequence* flanking nt sequence of the edited locus, 100nt long on both sides of the edit,  
+*centered_sequence:* flanking nt sequence of the edited locus, 100nt long on both sides of the edit,  
+*strand_collapsed_cluster_id:* unique ID of the edited locus, IRRESPECTIVELY of the strand orientation (i.e. same coordinates on opposite strands clustered together),  
 
 
 
