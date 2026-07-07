@@ -19,7 +19,7 @@ FINAL_RESULTS_1732_4894_MMs.tsv contains the counted edits done on Hek293T cell 
 *best_end_1732:*  the ending coordinate of the optimal alignment of the 1732 gRNA+PAM sequence, according to criterion described above,  
 *best_substring_1732:* the subsequence of the edit flanking sequence, with the length equal to the length of gRNA+PAM sequence, giving the lowest edit distance to gRNA as measured by Hamming distance,  
 *mismatch_count_1732:* edit distance between optimal flanking subsequence (see description above) and gRNA+PAM sequences, as measured by Hamming distance,  
-
+*hit_orientation_4894 : mismatch_count_4894:* same as *hit_orientation_1732 : mismatch_count_1732* but for 4894 gRNA+PAM;
 
 
 # Modules description
