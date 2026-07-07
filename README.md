@@ -13,6 +13,8 @@ FINAL_RESULTS_1732_4894_MMs.tsv contains the counted edits done on Hek293T cell 
 *clustered_sequence:* nt sequence of the edited locus (either one or more nt long),  
 *centered_sequence:* flanking nt sequence of the edited locus, 100nt long on both sides of the edit,  
 *strand_collapsed_cluster_id:* unique ID of the edited locus, IRRESPECTIVELY of the strand orientation (i.e. same coordinates on opposite strands clustered together),  
+*strand_collapsed_cluster_total:* the rowwise sum of edits of a given inter-strand cluster,  
+*hit_orientation_1732:* the optimal alignment of the gRNA+PAM sequence to the flanking sequence of the edit in the sense of optimizing local sliding-window Hamming distance,  
 
 
 
