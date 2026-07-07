@@ -6,6 +6,8 @@ FINAL_RESULTS_1732_4894_MMs.tsv contains the counted edits done on Hek293T cell 
 *chrom:* the contig which the edit is located on,  
 *start:* the coordinate of the beginning of the edit,  
 *end:* the coordinate of the end of the edit,  
+*strand:* orientation of the edited strand (+/-),  
+*1732_1.breakends.noEnds.FILTERED : Neg_ctrl_1h_DNA1.breakends.noEnds.FILTERED:* number of edits in particular samples, calculated according to the INDUCE-seq protocol,  
 
 
 # Modules description
