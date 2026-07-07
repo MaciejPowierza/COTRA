@@ -8,6 +8,9 @@ FINAL_RESULTS_1732_4894_MMs.tsv contains the counted edits done on Hek293T cell 
 *end:* the coordinate of the end of the edit,  
 *strand:* orientation of the edited strand (+/-),  
 *1732_1.breakends.noEnds.FILTERED : Neg_ctrl_1h_DNA1.breakends.noEnds.FILTERED:* number of edits in particular samples, calculated according to the INDUCE-seq protocol,  
+*TOTAL_SUMS:* the rowwise sum of edits in a given loci. One loci is either one edited nucleotide or a group of nucleotides with pairwise distances smaller than 5nt apart,  
+*cluster_id:* unique ID of the edited loci (see description of the *TOTAL_SUMS* column,  
+
 
 
 # Modules description
