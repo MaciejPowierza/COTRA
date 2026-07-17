@@ -23,7 +23,7 @@ FINAL_RESULTS_1732_4894_MMs.tsv contains the counted edits done on Hek293T cell 
 
 
 # Modules description
-**main.R**: user interface to communicate with the pipeline via the parameter setting;
+**main.R**: user interface to communicate with the pipeline via the parameters setting;
 
 **00_setup.R**: configuration of the working environment. Installing necessary packages, if needed;  
 
