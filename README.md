@@ -23,8 +23,15 @@ FINAL_RESULTS_1732_4894_MMs.tsv contains the counted edits done on Hek293T cell 
 
 
 # Modules description
-**00_setup.R**: configuration of the working environment. Installing necessary packages, if needed; 
-**01_io.R**: reading in the input data in a tabular form; 
-**02_sampling.R**: splitting the input data into particular samples; 
+**00_setup.R**: configuration of the working environment. Installing necessary packages, if needed;  
+**01_io.R**: reading in the input data in a tabular form;  
+**02_sampling.R**: splitting the input data into particular samples;  
+**03_features.R**: extracts from the edit flanking sequence the features used subsequently to train the model. Among them:
+ - GC content,
+ - AT/GC skews,
+ - CpG count,
+ - k-mer frequencies (from order=1 to order=4);
+All the itemized features gives a 344-dimensional feature space;
+
 # Dependencies
 "Biostrings", "ggplot2", "FactoMineR", "dynamicTreeCut", "multiblock", "e1071", "isotree", "ineq", "entropy", "vegan", "mclust", "NMF", "caret", "RGCCA", "Rdimtools", "fastICA"
