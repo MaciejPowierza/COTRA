@@ -53,9 +53,20 @@ Finally, clusters smaller than a user-defined threshold are iteratively reassign
  - Laplacian score,
  - Forward Orthogonal Search by Maximizing the Overall Dependency (FosMod),
  - Multi-Cluster Feature Selection,
- - Permutational testing of feature set stability across clusters;
+ - Permutational testing of feature set stability across clusters,
+ - NO feature selection at all;
 
+**04b_rgcca_blocks.R**: performs similar operations as **04_routing_blocks_hpca2.R**, but adapted to the RGCCA multiblock analysis framework;  
 
+**05_dim_reduction2.R**: Contains various algorithms for performing the dimensionaly reduction of the input feature space, represented in this pipeline by **feature matrix**. The algorithms implemented are as follows:
+ - ordinary Principal Component Analysis (PCA),
+ - weighted Principal Component Analysis (wPCA),
+ - hierarchical Principal Component Analysis (hPCA),
+ - Bayesian Principal Component Analysis (bPCA),
+ - Non-negative Matrix Factorization (NMF),
+ - Regularized Generalized Canonical Correlation Analysis (RGCCA),
+ - Sparse Generalized Canonical Correlation Analysis (SGCCA),
+ - Factor Analysis (FA),
 
 # Dependencies
 "Biostrings", "ggplot2", "FactoMineR", "dynamicTreeCut", "multiblock", "e1071", "isotree", "ineq", "entropy", "vegan", "mclust", "NMF", "caret", "RGCCA", "Rdimtools", "fastICA"
