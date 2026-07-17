@@ -31,7 +31,11 @@ FINAL_RESULTS_1732_4894_MMs.tsv contains the counted edits done on Hek293T cell 
  - AT/GC skews,
  - CpG count,
  - k-mer frequencies (from order=1 to order=4);
-All the itemized features gives a 344-dimensional feature space;
+All the itemized features gives a 344-dimensional feature space. This feature space, jointly with the edit occurrences per sample forms a **feature matrix**;
+**03b_preprocessing.R**: performs early preprocessing of the **feature matrix**. This preprocessing is aggregated into 3 levels:
+   - *none*: no preprocessing is performed,
+   - *basic*: includes: zero and near-zero variance removal, as well as removal of exact linear combinations. The last step is especially of importance because of compositional nature of k-mer representation, which induces at least one column being an exact linear combinations of others per k-mer order;
+   -  
 
 # Dependencies
 "Biostrings", "ggplot2", "FactoMineR", "dynamicTreeCut", "multiblock", "e1071", "isotree", "ineq", "entropy", "vegan", "mclust", "NMF", "caret", "RGCCA", "Rdimtools", "fastICA"
