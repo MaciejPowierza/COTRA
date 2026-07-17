@@ -67,6 +67,11 @@ Finally, clusters smaller than a user-defined threshold are iteratively reassign
  - Regularized Generalized Canonical Correlation Analysis (RGCCA),
  - Sparse Generalized Canonical Correlation Analysis (SGCCA),
  - Factor Analysis (FA),
+ - Locality Pursuit Embedding (LPE),
+ - Independent Component Analysis (ICA),
+ - NO dimensionality reduction at all;
+
+
 
 # Dependencies
 "Biostrings", "ggplot2", "FactoMineR", "dynamicTreeCut", "multiblock", "e1071", "isotree", "ineq", "entropy", "vegan", "mclust", "NMF", "caret", "RGCCA", "Rdimtools", "fastICA"
