@@ -40,5 +40,15 @@ All the itemized features gives a 344-dimensional feature space. This feature sp
 
 **04_routing_blocks_hpca2.R**: this module performs a series of operations aiming at constructing the blocks of variables for hPCA dimensionality reduction. Firstly it calculates several statistics describing the sparsity of particular dimensions of **feature matrix**. It's done with the help of: Gini coefficient, feature entropy, fraction of zeros per feature, support, variance, standard deviation and mean. For each of these features independent cutoffs are set, depending on which the similarity between features is calculated by either Spearman correlation (dense features), Hellinger coefficient (moderately dense features), or Jaccard metric (sparse features). This implies that the features are effectively split into 3 discordant spaces, within which independent processes of hierarchical clustering are perform to divide the features into blocks. At the end, a dynamic clustering of small clusters (below a given threshold) to the most similar other clusters, as long as the smallest cluster in the set of cluster is no smaller than a given threshold, is performed. The similarity of clusters is assessed using the RV coefficient.
 
+**04_routing_blocks_hpca2.R**: This module constructs blocks of variables for hPCA-based dimensionality reduction.
+
+First, it computes a set of statistics describing the sparsity and distribution of features in the feature matrix, including the Gini coefficient, feature entropy, fraction of zeros per feature, support, variance, standard deviation, and mean.
+
+Based on these statistics, feature-specific cutoffs are defined to determine how similarity between features should be measured. Depending on feature density, similarity is computed using one of three metrics: Spearman correlation for dense features, the Hellinger coefficient for moderately dense features, and the Jaccard metric for sparse features.
+
+As a result, features are effectively partitioned into three separate spaces, within which hierarchical clustering is performed independently to divide features into blocks.
+
+Finally, clusters smaller than a user-defined threshold are iteratively reassigned to the most similar larger clusters until all clusters satisfy the minimum size requirement. Cluster similarity is assessed using the RV coefficient.
+
 # Dependencies
 "Biostrings", "ggplot2", "FactoMineR", "dynamicTreeCut", "multiblock", "e1071", "isotree", "ineq", "entropy", "vegan", "mclust", "NMF", "caret", "RGCCA", "Rdimtools", "fastICA"
