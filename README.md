@@ -48,5 +48,14 @@ As a result, features are effectively partitioned into three separate spaces, wi
 
 Finally, clusters smaller than a user-defined threshold are iteratively reassigned to the most similar larger clusters until all clusters satisfy the minimum size requirement. Cluster similarity is assessed using the RV coefficient.
 
+**04a_feature_selection.R**: This is a general use module, compatible with all dimensionality reduction methods, implemented in the *05_dim_reduction.R* module. It contains the following methods/criteria for the feature selection:  
+ - the maximum variance, with a specified cutoff,
+ - Laplacian score,
+ - Forward Orthogonal Search by Maximizing the Overall Dependency (FosMod),
+ - Multi-Cluster Feature Selection,
+ - Permutational testing of feature set stability across clusters;
+
+
+
 # Dependencies
 "Biostrings", "ggplot2", "FactoMineR", "dynamicTreeCut", "multiblock", "e1071", "isotree", "ineq", "entropy", "vegan", "mclust", "NMF", "caret", "RGCCA", "Rdimtools", "fastICA"
