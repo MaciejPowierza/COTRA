@@ -31,6 +31,7 @@ FINAL_RESULTS_1732_4894_MMs.tsv contains the counted edits done on Hek293T cell 
  - AT/GC skews,
  - CpG count,
  - k-mer frequencies (from order=1 to order=4);
+
 All the itemized features gives a 344-dimensional feature space. This feature space, jointly with the edit occurrences per sample forms a **feature matrix**;  
 **03b_preprocessing.R**: performs early preprocessing of the **feature matrix**. This preprocessing is aggregated into 3 levels:
  - *none*: no preprocessing is performed,
