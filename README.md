@@ -23,4 +23,4 @@ FINAL_RESULTS_1732_4894_MMs.tsv contains the counted edits done on Hek293T cell 
 
 
 # Modules description
-TD
+**00_setup.R**: configuration of the working environment. Installing necessary packages, if needed;
