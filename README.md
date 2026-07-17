@@ -24,3 +24,6 @@ FINAL_RESULTS_1732_4894_MMs.tsv contains the counted edits done on Hek293T cell 
 
 # Modules description
 **00_setup.R**: configuration of the working environment. Installing necessary packages, if needed;
+
+# Dependencies
+"Biostrings", "ggplot2", "FactoMineR", "dynamicTreeCut", "multiblock", "e1071", "isotree", "ineq", "entropy", "vegan", "mclust", "NMF", "caret", "RGCCA", "Rdimtools", "fastICA"
