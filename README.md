@@ -76,7 +76,13 @@ Finally, clusters smaller than a user-defined threshold are iteratively reassign
 
 **06_detectors.R**: Implements three algorithms apt for distinguishing one particular observation (on-target) in a set of observations (on-target + multiple off-targets). It includes: Mahalanobis filter, One-class Support Vector Machine (OC-SVM), and IsoForest;
 
-
+**07_experiment2.R**: Performs an exhaustive search for an optimal combination of factors in a sense of minimizing the rank_frac measure of on-target detection. The grid of factors includes:  
+ - experimental sample,
+ - early preprocessing methods,
+ - feature selection methods,
+ - dimensionality reduction methods,
+ - on-target detectors,
+ - number of principal components or their analogues taken to train the on-target detector;
 
 # Dependencies
 "Biostrings", "ggplot2", "FactoMineR", "dynamicTreeCut", "multiblock", "e1071", "isotree", "ineq", "entropy", "vegan", "mclust", "NMF", "caret", "RGCCA", "Rdimtools", "fastICA"
