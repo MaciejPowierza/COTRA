@@ -23,6 +23,8 @@ FINAL_RESULTS_1732_4894_MMs.tsv contains the counted edits done on Hek293T cell 
 
 
 # Modules description
+**main.R**: user interface to communicate with the pipeline via the parameter setting;
+
 **00_setup.R**: configuration of the working environment. Installing necessary packages, if needed;  
 
 **01_io.R**: reading in the input data in a tabular form;  
@@ -83,6 +85,8 @@ Finally, clusters smaller than a user-defined threshold are iteratively reassign
  - dimensionality reduction methods,
  - on-target detectors,
  - number of principal components or their analogues taken to train the on-target detector;
+
+**08_viz.R**: depreccated; new visualization module is under construction;
 
 # Dependencies
 "Biostrings", "ggplot2", "FactoMineR", "dynamicTreeCut", "multiblock", "e1071", "isotree", "ineq", "entropy", "vegan", "mclust", "NMF", "caret", "RGCCA", "Rdimtools", "fastICA"
