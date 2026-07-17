@@ -38,6 +38,7 @@ All the itemized features gives a 344-dimensional feature space. This feature sp
  - *basic*: includes: zero and near-zero variance removal, as well as removal of exact linear combinations. The last step is especially of importance because of compositional nature of k-mer representation, which induces at least one column being an exact linear combinations of others per k-mer order;
  - *aggressive*: includes all preprocessing steps from the *basic* level as well as a removal of highly correlated features (>0.95 as measured by the Pearson correlation);
 
+**04_routing_blocks_hpca2.R**: this module performs a series of operations aiming at constructing the blocks of variables for hPCA dimensionality reduction. Firstly it calculates several statistics describing the sparsity of particular dimensions of **feature matrix**. It's done with the help of: Gini coefficient, feature entropy, fraction of zeros per feature, support, variance, standard deviation and mean. For each of these features independent cutoffs are set, depending on which the similarity between features is calculated by either Spearman correlation (dense features), Hellinger coefficient (moderately dense features), or Jaccard metric (sparse features).
 
 # Dependencies
 "Biostrings", "ggplot2", "FactoMineR", "dynamicTreeCut", "multiblock", "e1071", "isotree", "ineq", "entropy", "vegan", "mclust", "NMF", "caret", "RGCCA", "Rdimtools", "fastICA"
