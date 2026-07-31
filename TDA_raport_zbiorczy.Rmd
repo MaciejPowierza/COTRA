@@ -1,0 +1,528 @@
+---
+title: "TDA - porównanie danych"
+author: "MJ"
+date: "2026-07-11"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning = F, message = F, out.width="80%", fig.show='hold')
+```
+
+```{r}
+library(TDA)
+library(TDAmapper)
+library(igraph)
+library(dplyr)
+library(kableExtra)
+library(readxl)
+```
+
+```{r mapper}
+data.prep <- function(path, typ = "original")
+{
+  dane <- as.data.frame(read.csv(path))
+  if(typ == "original") return(dane)
+  dane.num <- dane[, -c(1,2,3,4)]
+  dane.num[] <- lapply(dane.num, as.numeric)
+  
+  if(typ == "numeric") return(dane.num)
+}
+
+
+Mapper <- function(data.num,
+                   soczewka,
+                   vert.col,
+                   num.intervals = 15,
+                   percent.overlap = 50,
+                   num.bins = 10,
+                   table = F)
+{
+  #data.scale <- scale(data.num)
+
+  wynik.mapper <- mapper1D(distance_matrix = dist(scale(data.num[,-1])),
+                           filter_values = soczewka,
+                           num_intervals = num.intervals,
+                           percent_overlap = percent.overlap,
+                           num_bins_when_clustering = num.bins)
+  
+  graf.mapper <- graph_from_adjacency_matrix(wynik.mapper$adjacency, mode = "undirected")
+  #print(wynik.mapper$points_in_vertex)
+  srednie.edycje <- sapply(wynik.mapper$points_in_vertex, function(ind.points) {mean(data.num[ind.points, vert.col], na.rm = T)})
+  
+  paleta <- colorRampPalette(c('blue', 'yellow', 'red'))(100)
+  min.ed <- min(srednie.edycje, na.rm = T)
+  max.ed <- max(srednie.edycje, na.rm = T)
+  
+  
+  scale.edits <- round((srednie.edycje - min.ed) / (max.ed - min.ed) * 99) + 1
+  
+  col.vertices <- paleta[scale.edits]
+  
+  plot(graf.mapper,
+       layout = layout_with_fr(graf.mapper),
+       vertex.color = col.vertices,
+       vertex.size = log(sapply(wynik.mapper$points_in_vertex, length) + 1) * 2.5,
+       vertex.label = NA,
+       edge.color = "gray50")
+  
+  if (table == T)
+  {
+    prog.odciecia <- quantile(srednie.edycje, probs = 0.8, na.rm = TRUE)
+    
+    top.wezly <- which(srednie.edycje >= prog.odciecia)
+    
+    ind.red <- unlist(wynik.mapper$points_in_vertex[top.wezly])
+    ind.red <- unique(ind.red)
+    
+    
+    mean.red <- colMeans(dane.num[ind.red, ], na.rm = T)
+    mean.rest <- colMeans(dane.num[-ind.red, ], na.rm = T)
+    
+    diff <- mean.red - mean.rest
+    imp.features <- sort(diff, decreasing = T)
+    
+    kbl(head(imp.features, 10), col.names = c("Zmienna", "Różnica względem tła"), caption = "Tabela zmiennych wykazujących największy wpływ na występowanie edycji oraz różnica średnich tych zmiennych w stosunku do tła biologicznego") %>% kable_styling(latex_options = "H")
+    
+  }
+}
+
+```
+
+```{r homologia_persystentna}
+
+# Homologia trwała - metoda landmarków
+landmarks <- function(data.scale,
+                      lands,
+                      iter.max = 50,
+                      nstart,
+                      maxdimension = 1,
+                      library = "GUDHI",
+                      plot = F)
+{
+  clusters <- kmeans(data.scale, centers = lands, iter.max = iter.max, nstart = nstart)
+  landmarks <- clusters$centers
+  
+  odleglosci <- dist(landmarks)
+  
+  maxscale <- max(odleglosci)
+  
+  homology.landmarks <- ripsDiag(X = landmarks, maxdimension = maxdimension, maxscale = maxscale, library = library)
+  if (plot == T) plot(homology.landmarks[["diagram"]], main = "Diagram persystencji")
+  return(homology.landmarks)
+}
+
+# Metoda landscape
+landscapes <- function(homolody.landmarks, 
+                       len,
+                       dimension,
+                       xlim = len)
+{
+  max.death <- max(homology.landmarks[["diagram"]][,3])
+  lands1 <- TDA::landscape(homology.landmarks[["diagram"]], dimension = dimension, KK = 1, tseq = seq(0, max.death, length = len))
+  
+  lands2 <- TDA::landscape(homology.landmarks[["diagram"]], dimension = dimension, KK = 2, tseq = seq(0, max.death, length = len))
+  
+  plot(seq(0, max.death, length = len),lands1, type= "l", main = "Landscapes", col = "maroon", ylab = "lands", xlim = xlim)
+  lines(seq(0, max.death, length = len),lands2, type= "l", col = "green")
+  legend("topright",                   
+         legend = c("Lands1", "Lands2"), 
+         col = c("maroon", "green"),  
+         lty = 1,                    
+         lwd = 2)
+}
+
+```
+
+
+# Algorytm Mapper dla zbiorów danych - 1732
+
+## Opis 
+
+  Zastosowany został algorytm Mapper z pakietu TDAmapper. Parametry:
+  
+  * soczewka - kolumna `sample_edits`
+  * liczba przedziałów (*num_intervals*): 18 dla nukleaz, 10 dla BE
+  * procent nakładania (*percent_overlap*): 65
+  * liczba binów klastrowania (*num_bins_when_clustering*): 8
+
+* *1732_1*
+
+```{r 17323_1}
+set.seed(123)
+dane.num_1732_1 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_1.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
+
+# pca.wynik <- prcomp(dane.num_1732_1, rank. = 2)
+# silne_ciecia <- dane.num_1732_1$sample_edits > 30
+# plot(pca.wynik$x[,1], pca.wynik$x[,2],
+#      col = ifelse(silne_ciecia, "red", "black"))
+# 
+
+
+mapper_1732 <- Mapper(dane.num_1732_1,
+                      soczewka = log2(dane.num_1732_1$sample_edits),
+                      vert.col = 1,
+                      num.intervals = 15,
+                      percent.overlap = 65,
+                      num.bins = 8)
+
+```
+
+Interpretacja: długi ogon - jednorodność, podobny profil sekwencyjny,
+gwiazda - różnorodność, nie ma jednego uniwersalnego motywu sekwencyjnego gwarantującego powstanie hotspotu (wiele wariantów środowiska flankującego, które niezaleznioe prowadzą do wysokiej skuteczności edytora). 
+Wniosek: zależność nie jest liniowa
+
+* *1732_1h_DNA2*
+
+```{r 1732_1h_DNA2}
+set.seed(123)
+dane.num_1732_1h_DNA2 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_1h_DNA2.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
+
+# pca.wynik <- prcomp(dane.num_1732_1h_DNA2, rank. = 2)
+# silne_ciecia <- dane.num_1732_1h_DNA2$sample_edits > 30
+# plot(pca.wynik$x[,1], pca.wynik$x[,2],
+#      col = ifelse(silne_ciecia, "red", "black"))
+
+
+mapper_1732_1h_DNA2 <- Mapper(dane.num_1732_1h_DNA2,
+                              soczewka = log2(dane.num_1732_1h_DNA2$sample_edits),
+                              vert.col = 1,
+                              num.intervals = 18, #15 trochę lepiej
+                              percent.overlap = 65,
+                              num.bins = 8)
+
+# map <- Mapper(dane.num_1732_1h_DNA2,
+#                               soczewka = prcomp(dane.num_1732_1h_DNA2, rank. = 1)$x[,1],
+#                               vert.col = 1,
+#                               num.intervals = 8,
+#                               percent.overlap = 55,
+#                               num.bins = 8)
+
+
+```
+
+Interpretacja: ogon -  ponownie jednorodny, płynne przejscie kolorów sugeruje brak gwałtownych skoków w profilu sekwencji, gwiazdy - wiele różnych wariantów, nowość - nowa gwiazda - istnieje czynnik, który powoduje jeszcze większy wzrost skuteczności edycji (tu też istenieje wiele odrebnych ścieżek)
+
+
+* *1732_1h_DNA6_2*
+
+```{r 1732_1h_DNA6_2}
+set.seed(123)
+dane.num_1732_1h_DNA6_2 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_1h_DNA6_2.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
+
+# pca.wynik <- prcomp(dane.num_1732_1h_DNA6_2, rank. = 2)
+# silne_ciecia <- dane.num_1732_1h_DNA6_2$sample_edits > 30
+# plot(pca.wynik$x[,1], pca.wynik$x[,2],
+#      col = ifelse(silne_ciecia, "red", "black"))
+
+
+mapper_1732_1h_DNA6_2 <- Mapper(dane.num_1732_1h_DNA6_2,
+                                soczewka = log2(dane.num_1732_1h_DNA6_2$sample_edits),
+                                vert.col = 1,
+                                num.intervals = 18,
+                                percent.overlap = 65,
+                                num.bins = 8)
+```
+
+* *1732_2*
+
+```{r 1732_2}
+set.seed(123)
+dane.num_1732_2 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_2.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
+
+# pca.wynik <- prcomp(dane.num_1732_2, rank. = 2)
+# silne_ciecia <- dane.num_1732_2$sample_edits > 30
+# plot(pca.wynik$x[,1], pca.wynik$x[,2],
+#      col = ifelse(silne_ciecia, "red", "black"))
+
+
+mapper_1732_2 <- Mapper(dane.num_1732_2,
+                   soczewka = log2(dane.num_1732_2$sample_edits),
+                   vert.col = 1,
+                   num.intervals = 18,
+                      percent.overlap = 65,
+                      num.bins = 8)
+```
+
+
+
+* *1732_4h_DNA3*
+
+```{r 1732_4h_DNA3}
+set.seed(123)
+dane.num_1732_4h_DNA3 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_4h_DNA3.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
+
+# pca.wynik <- prcomp(dane.num_1732_4h_DNA3, rank. = 2)
+# silne_ciecia <- dane.num_1732_4h_DNA3$sample_edits > 30
+# plot(pca.wynik$x[,1], pca.wynik$x[,2],
+#      col = ifelse(silne_ciecia, "red", "black"))
+
+
+mapper_1732_4h_DNA3 <- Mapper(dane.num_1732_4h_DNA3,
+                   soczewka = log2(dane.num_1732_4h_DNA3$sample_edits),
+                   vert.col = 1,
+                   num.intervals = 18,
+                   percent.overlap = 65,
+                   num.bins = 8)
+```
+
+
+* *1732_4h_DNA6_1*
+
+```{r 1732_4h_DNA6_1}
+set.seed(123)
+dane.num_1732_4h_DNA6_1 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_4h_DNA6_1.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
+
+# pca.wynik <- prcomp(dane.num_1732_4h_DNA6_1, rank. = 2)
+# silne_ciecia <- dane.num_1732_4h_DNA6_1$sample_edits > 30
+# plot(pca.wynik$x[,1], pca.wynik$x[,2],
+#      col = ifelse(silne_ciecia, "red", "black"))
+
+
+mapper_1732_4h_DNA3 <- Mapper(dane.num_1732_4h_DNA6_1,
+                   soczewka = log2(dane.num_1732_4h_DNA6_1$sample_edits),
+                   vert.col = 1,
+                   num.intervals = 18,
+                   percent.overlap = 65,
+                   num.bins = 8)
+```
+
+
+* *1732_BE3_24h_DNA3_2*
+
+```{r 1732_BE3_24h_DNA3_2}
+set.seed(123)
+dane.num_1732_BE3_24h_DNA3_2 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_BE3_24h_DNA3_2.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
+
+# pca.wynik <- prcomp(dane.num_1732_BE3_24h_DNA3_2, rank. = 2)
+# silne_ciecia <- dane.num_1732_BE3_24h_DNA3_2$sample_edits > 30
+# plot(pca.wynik$x[,1], pca.wynik$x[,2],
+#      col = ifelse(silne_ciecia, "red", "black"))
+
+
+mapper_1732_BE3_24h_DNA3_2 <- Mapper(dane.num_1732_BE3_24h_DNA3_2,
+                   soczewka = log2(dane.num_1732_BE3_24h_DNA3_2$sample_edits),
+                   vert.col = 1,
+                   num.intervals = 10,
+                   percent.overlap = 65,
+                   num.bins = 8)
+```
+
+
+* *1732_BE3_4h_DNA1_1*
+
+```{r 1732_BE3_4h_DNA1_1}
+set.seed(123)
+dane.num_1732_BE3_4h_DNA1_1 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_BE3_4h_DNA1_1.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
+
+# pca.wynik <- prcomp(dane.num_1732_BE3_4h_DNA1_1, rank. = 2)
+# silne_ciecia <- dane.num_1732_BE3_4h_DNA1_1$sample_edits > 30
+# plot(pca.wynik$x[,1], pca.wynik$x[,2],
+#      col = ifelse(silne_ciecia, "red", "black"))
+
+
+mapper_1732_BE3_4h_DNA1_1 <- Mapper(dane.num_1732_BE3_4h_DNA1_1,
+                   soczewka = log2(dane.num_1732_BE3_4h_DNA1_1$sample_edits),
+                   vert.col = 1,
+                   num.intervals = 10,
+                   percent.overlap = 65,
+                   num.bins = 8)
+```
+
+
+* *1732_BE3_4h_DNA4_1*
+
+```{r 1732_BE3_4h_DNA4_1}
+set.seed(123)
+dane.num_1732_BE3_4h_DNA4_1 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_BE3_4h_DNA4_1.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
+
+# pca.wynik <- prcomp(dane.num_1732_BE3_4h_DNA4_1, rank. = 2)
+# silne_ciecia <- dane.num_1732_BE3_4h_DNA4_1$sample_edits > 30
+# plot(pca.wynik$x[,1], pca.wynik$x[,2],
+#      col = ifelse(silne_ciecia, "red", "black"))
+
+
+mapper_1732_BE3_4h_DNA4_1 <- Mapper(dane.num_1732_BE3_4h_DNA4_1,
+                   soczewka = log2(dane.num_1732_BE3_4h_DNA4_1$sample_edits),
+                   vert.col = 1,
+                   num.intervals = 10,
+                   percent.overlap = 65,
+                   num.bins = 8)
+```
+
+
+* *1732_BE3_24h_DNA6_2*
+
+```{r 1732_BE3_24h_DNA6_2}
+set.seed(123)
+dane.num_1732_BE3_24h_DNA6_2 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_BE3_24h_DNA6_2.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
+
+# pca.wynik <- prcomp(dane.num_1732_BE3_24h_DNA6_2, rank. = 2)
+# silne_ciecia <- dane.num_1732_BE3_24h_DNA6_2$sample_edits > 30
+# plot(pca.wynik$x[,1], pca.wynik$x[,2],
+#      col = ifelse(silne_ciecia, "red", "black"))
+
+
+mapper_1732_BE3_24h_DNA6_2 <- Mapper(dane.num_1732_BE3_24h_DNA6_2,
+                   soczewka = log2(dane.num_1732_BE3_24h_DNA6_2$sample_edits),
+                   vert.col = 1,
+                   num.intervals = 10,
+                   percent.overlap = 65,
+                   num.bins = 8)
+```
+
+
+* *1732_BE3st_4h_DNA6_1*
+
+```{r 1732_BE3st_4h_DNA6_1}
+set.seed(123)
+dane.num_1732_BE3st_4h_DNA6_1 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_BE3st_4h_DNA6_1.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
+
+# pca.wynik <- prcomp(dane.num_1732_BE3st_4h_DNA6_1, rank. = 2)
+# silne_ciecia <- dane.num_1732_BE3st_4h_DNA6_1$sample_edits > 30
+# plot(pca.wynik$x[,1], pca.wynik$x[,2],
+#      col = ifelse(silne_ciecia, "red", "black"))
+
+
+mapper_1732_BE3st_4h_DNA6_1 <- Mapper(dane.num_1732_BE3st_4h_DNA6_1,
+                   soczewka = log2(dane.num_1732_BE3st_4h_DNA6_1$sample_edits),
+                   vert.col = 1,
+                   num.intervals = 10,
+                   percent.overlap = 65,
+                   num.bins = 8)
+```
+
+
+* *1732_BE3x2_4h_DNA3_1*
+
+```{r 1732_BE3x2_4h_DNA3_1}
+set.seed(123)
+dane.num_1732_BE3x2_4h_DNA3_1 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_BE3x2_4h_DNA3_1.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
+
+# pca.wynik <- prcomp(dane.num_1732_BE3x2_4h_DNA3_1, rank. = 2)
+# silne_ciecia <- dane.num_1732_BE3x2_4h_DNA3_1$sample_edits > 30
+# plot(pca.wynik$x[,1], pca.wynik$x[,2],
+#      col = ifelse(silne_ciecia, "red", "black"))
+
+
+mapper_1732_BE3x2_4h_DNA3_1 <- Mapper(dane.num_1732_BE3x2_4h_DNA3_1,
+                   soczewka = log2(dane.num_1732_BE3x2_4h_DNA3_1$sample_edits),
+                   vert.col = 1,
+                   num.intervals = 10,
+                   percent.overlap = 65,
+                   num.bins = 8)
+```
+
+
+* *1732_BE3x2_4h_DNA6_2*
+
+```{r 1732_BE3x2_4h_DNA6_2}
+set.seed(123)
+dane.num_1732_BE3x2_4h_DNA6_2 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_BE3x2_4h_DNA6_2.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
+
+# pca.wynik <- prcomp(dane.num_1732_BE3x2_4h_DNA6_2, rank. = 2)
+# silne_ciecia <- dane.num_1732_BE3x2_4h_DNA6_2$sample_edits > 30
+# plot(pca.wynik$x[,1], pca.wynik$x[,2],
+#      col = ifelse(silne_ciecia, "red", "black"))
+
+
+mapper_1732_BE3x2_4h_DNA6_2 <- Mapper(dane.num_1732_BE3x2_4h_DNA6_2,
+                   soczewka = log2(dane.num_1732_BE3x2_4h_DNA6_2$sample_edits),
+                   vert.col = 1,
+                   num.intervals = 10,
+                   percent.overlap = 65,
+                   num.bins = 8)
+```
+
+
+* *1732_Cas9_4h_DNA5_2*
+
+```{r 1732_Cas9_4h_DNA5_2}
+set.seed(123)
+dane.num_1732_Cas9_4h_DNA5_2 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_Cas9_4h_DNA5_2.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
+
+# pca.wynik <- prcomp(dane.num_1732_BE3x2_4h_DNA6_2, rank. = 2)
+# silne_ciecia <- dane.num_1732_BE3x2_4h_DNA6_2$sample_edits > 30
+# plot(pca.wynik$x[,1], pca.wynik$x[,2],
+#      col = ifelse(silne_ciecia, "red", "black"))
+
+
+mapper_1732_Cas9_4h_DNA5_2 <- Mapper(dane.num_1732_Cas9_4h_DNA5_2,
+                   soczewka = log2(dane.num_1732_Cas9_4h_DNA5_2$sample_edits),
+                   vert.col = 1,
+                   num.intervals = 10,
+                   percent.overlap = 65,
+                   num.bins = 8)
+```
+
+
+* *1732_Cas9_24h_DNA3_2*
+
+```{r 1732_Cas9_24h_DNA3_2}
+set.seed(123)
+dane.num_1732_Cas9_24h_DNA3_2 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_Cas9_24h_DNA3_2.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
+
+# pca.wynik <- prcomp(dane.num_1732_BE3x2_4h_DNA6_2, rank. = 2)
+# silne_ciecia <- dane.num_1732_BE3x2_4h_DNA6_2$sample_edits > 30
+# plot(pca.wynik$x[,1], pca.wynik$x[,2],
+#      col = ifelse(silne_ciecia, "red", "black"))
+
+
+mapper_1732_Cas9_24h_DNA3_2 <- Mapper(dane.num_1732_Cas9_24h_DNA3_2,
+                   soczewka = log2(dane.num_1732_Cas9_24h_DNA3_2$sample_edits),
+                   vert.col = 1,
+                   num.intervals = 3,
+                   percent.overlap = 65,
+                   num.bins = 10)
+```
+
+
+
+
+# Wnioski wstępne (ogólne)
+
+ Pierwsze 6 wykresów:
+ 
+
+
+
+
+
+
+!!!! próg odcięcia - 5, odfiltrowanie (tych obserwacji) zamiast logarytmu !!!
+
+diagnostyka, kanoniczna geometria --> sprawdzić
+
+pytanie: jak ustalić kanoniczną geometrię edycji i czy jest to sensowne,
+znaleźć czy są jakieś artykuły
+reprezentacje kanoniczne
+
+
+guide-seq nuture BE  <- artykuł
+
+na zbiorach guide-seq BE i INDUCE-seq kanoniczne --> szukamy struktur kanonicznych ("zdrowie" edycji),
+INDUCE-seq - ewaluacja wyników
+
+
+idealnie zdrowa edycja zawiera edycje tylko w miejscu on-targetowym (brak off-targetów)
+
+optymalna edycja zawiera niewiele off-targetów o mniejszym pokryciu (liczby z kolumny sample_edits), idealnie, jeśli nie trafiają w funkcjonalnie ważne miejsca w genomie (offtargety of course)
+ważne miejsca - np miejsca kodujące białka
+
+
+algorytmy do tworzenia drzewa filogenetycznego potrzebne do ustalenia geometrii kanonicznej <-- poczytać
+
+
+
+
+
+-------------------------------------------
+ na marginesie: algorytm parsemony??? --> do drzewa filogenetycznego
+--------------------------------------
+
+tytuł:
+Nadzorowana metoda poprawności edycji (w ramach benchmarku bedzie nienadzorowane, nadzorowane bo porównujemy do geometrii kanonicznej)
+
+
+
+Bioinformatyka i ewolucja molekularna, Higgs Paul, Altwood teresa
