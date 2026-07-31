@@ -152,20 +152,31 @@ landscapes <- function(homolody.landmarks,
 set.seed(123)
 dane.num_1732_1 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy_rap/Dane/1732_1.breakends.noEnds.FILTERED.feature_matrix.csv", typ = "numeric")
 
-# pca.wynik <- prcomp(dane.num_1732_1, rank. = 2)
-# silne_ciecia <- dane.num_1732_1$sample_edits > 30
-# plot(pca.wynik$x[,1], pca.wynik$x[,2],
-#      col = ifelse(silne_ciecia, "red", "black"))
-# 
+pca.wynik <- prcomp(dane.num_1732_1, rank. = 2)
+silne_ciecia <- dane.num_1732_1$sample_edits > 30
+plot(pca.wynik$x[,1], pca.wynik$x[,2],
+     col = ifelse(silne_ciecia, "red", "black"))
 
+dane.num_1732_1_filtered <- dane.num_1732_1 %>% filter(sample_edits >= 5)
 
-mapper_1732 <- Mapper(dane.num_1732_1,
+#hist(dane.num_1732_1_filtered$sample_edits)
+
+soczewka <- prcomp(scale(dane.num_1732_1), rank. = 1)
+
+mapper_1732_1 <- Mapper(dane.num_1732_1,
                       soczewka = log2(dane.num_1732_1$sample_edits),
                       vert.col = 1,
-                      num.intervals = 15,
+                      num.intervals = 18,
                       percent.overlap = 65,
                       num.bins = 8)
-
+```
+```{r}
+# mapper_1732_1 <- Mapper(dane.num_1732_1,
+#                       soczewka = soczewka$x[,1],
+#                       vert.col = 1,
+#                       num.intervals = 30,
+#                       percent.overlap = 60,
+#                       num.bins = 10)
 ```
 
 Interpretacja: długi ogon - jednorodność, podobny profil sekwencyjny,
@@ -183,14 +194,13 @@ dane.num_1732_1h_DNA2 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/TDA_nowy
 # plot(pca.wynik$x[,1], pca.wynik$x[,2],
 #      col = ifelse(silne_ciecia, "red", "black"))
 
-
+#hist(dane.num_1732_1h_DNA2$sample_edits)
 mapper_1732_1h_DNA2 <- Mapper(dane.num_1732_1h_DNA2,
                               soczewka = log2(dane.num_1732_1h_DNA2$sample_edits),
                               vert.col = 1,
                               num.intervals = 18, #15 trochę lepiej
                               percent.overlap = 65,
                               num.bins = 8)
-
 # map <- Mapper(dane.num_1732_1h_DNA2,
 #                               soczewka = prcomp(dane.num_1732_1h_DNA2, rank. = 1)$x[,1],
 #                               vert.col = 1,
@@ -303,7 +313,7 @@ dane.num_1732_BE3_24h_DNA3_2 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/T
 mapper_1732_BE3_24h_DNA3_2 <- Mapper(dane.num_1732_BE3_24h_DNA3_2,
                    soczewka = log2(dane.num_1732_BE3_24h_DNA3_2$sample_edits),
                    vert.col = 1,
-                   num.intervals = 10,
+                   num.intervals = 6,
                    percent.overlap = 65,
                    num.bins = 8)
 ```
@@ -387,7 +397,7 @@ dane.num_1732_BE3st_4h_DNA6_1 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/
 mapper_1732_BE3st_4h_DNA6_1 <- Mapper(dane.num_1732_BE3st_4h_DNA6_1,
                    soczewka = log2(dane.num_1732_BE3st_4h_DNA6_1$sample_edits),
                    vert.col = 1,
-                   num.intervals = 10,
+                   num.intervals = 6,
                    percent.overlap = 65,
                    num.bins = 8)
 ```
@@ -429,7 +439,7 @@ dane.num_1732_BE3x2_4h_DNA6_2 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/
 mapper_1732_BE3x2_4h_DNA6_2 <- Mapper(dane.num_1732_BE3x2_4h_DNA6_2,
                    soczewka = log2(dane.num_1732_BE3x2_4h_DNA6_2$sample_edits),
                    vert.col = 1,
-                   num.intervals = 10,
+                   num.intervals = 6,
                    percent.overlap = 65,
                    num.bins = 8)
 ```
@@ -450,7 +460,7 @@ dane.num_1732_Cas9_4h_DNA5_2 <- data.prep("C:/Users/Gonia/Desktop/Praktyki/TDA/T
 mapper_1732_Cas9_4h_DNA5_2 <- Mapper(dane.num_1732_Cas9_4h_DNA5_2,
                    soczewka = log2(dane.num_1732_Cas9_4h_DNA5_2$sample_edits),
                    vert.col = 1,
-                   num.intervals = 10,
+                   num.intervals = 5,
                    percent.overlap = 65,
                    num.bins = 8)
 ```
@@ -477,8 +487,7 @@ mapper_1732_Cas9_24h_DNA3_2 <- Mapper(dane.num_1732_Cas9_24h_DNA3_2,
 ```
 
 
-
-
+  
 # Wnioski wstępne (ogólne)
 
  Pierwsze 6 wykresów:
@@ -489,40 +498,10 @@ mapper_1732_Cas9_24h_DNA3_2 <- Mapper(dane.num_1732_Cas9_24h_DNA3_2,
 
 
 
-!!!! próg odcięcia - 5, odfiltrowanie (tych obserwacji) zamiast logarytmu !!!
-
-diagnostyka, kanoniczna geometria --> sprawdzić
-
-pytanie: jak ustalić kanoniczną geometrię edycji i czy jest to sensowne,
-znaleźć czy są jakieś artykuły
-reprezentacje kanoniczne
-
-
-guide-seq nuture BE  <- artykuł
-
-na zbiorach guide-seq BE i INDUCE-seq kanoniczne --> szukamy struktur kanonicznych ("zdrowie" edycji),
-INDUCE-seq - ewaluacja wyników
-
-
-idealnie zdrowa edycja zawiera edycje tylko w miejscu on-targetowym (brak off-targetów)
-
-optymalna edycja zawiera niewiele off-targetów o mniejszym pokryciu (liczby z kolumny sample_edits), idealnie, jeśli nie trafiają w funkcjonalnie ważne miejsca w genomie (offtargety of course)
-ważne miejsca - np miejsca kodujące białka
-
-
-algorytmy do tworzenia drzewa filogenetycznego potrzebne do ustalenia geometrii kanonicznej <-- poczytać
 
 
 
 
 
--------------------------------------------
- na marginesie: algorytm parsemony??? --> do drzewa filogenetycznego
---------------------------------------
-
-tytuł:
-Nadzorowana metoda poprawności edycji (w ramach benchmarku bedzie nienadzorowane, nadzorowane bo porównujemy do geometrii kanonicznej)
 
 
-
-Bioinformatyka i ewolucja molekularna, Higgs Paul, Altwood teresa
